@@ -11,4 +11,4 @@ PRODUCT_NAME = strand_reverser
 PRODUCT_BUNDLE_IDENTIFIER = com.anirudhmenon.strandReverser
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2024 Anirudh Menon (BSD 0 Clause). All rights reserved. 
+PRODUCT_COPYRIGHT = Copyright © 2024 Anirudh Menon. All rights reserved. 
