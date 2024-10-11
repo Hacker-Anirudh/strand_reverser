@@ -28,6 +28,7 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  flutter_launcher_icons: "^0.14.1"
   flutter:
     sdk: flutter
 
@@ -56,7 +57,7 @@ flutter:
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
-  uses-material-design: false
+  uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
   # assets:
@@ -88,3 +89,14 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/strand_reverser.png"
+  windows:
+    generate: true 
+    image_path: "assets/strand_reverser.png"
+  macos:
+    image_path: "assets/strand_reverser.png"
+    generate: true
+    

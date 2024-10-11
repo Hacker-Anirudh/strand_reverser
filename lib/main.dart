@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -10,102 +9,28 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const CupertinoApp(
-      home: MyHomePage(),
+    return const MaterialApp(
+      home: HomePage(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key});
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
 
   @override
   // ignore: library_private_types_in_public_api
-  _MyHomePageState createState() => _MyHomePageState();
+  _HomePageState createState() => _HomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _HomePageState extends State<HomePage> {
   TextEditingController textController = TextEditingController(); 
   String reversedSequence = ''; 
   String reverseSequence = '';
   String complementSequence = '';
   String sequence = '';
 
-  @override
-  Widget build(BuildContext context) {
-    return CupertinoPageScaffold(
-      navigationBar: const CupertinoNavigationBar(
-        middle: Text("Enter the DNA sequence you want to perform the operations on."),
-      ),
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CupertinoTextField(
-                controller: textController, 
-                placeholder: "Enter DNA sequence",
-                textAlign: TextAlign.center,
-                decoration: BoxDecoration(
-                  color: const Color.fromARGB(105, 255, 255, 255),
-                  borderRadius: BorderRadius.circular(8.0),
-                  border: Border.all(
-                    color: CupertinoColors.black,
-                    width: 1.0,
-                  ),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-                style: const TextStyle(fontSize: 18.0),
-              ),
-              const SizedBox(height: 20.0),
-              CupertinoButton.filled(
-                child: const Text('Go!'),
-                onPressed: () {
-                  String input = textController.text.toUpperCase(); 
-                  setState(() {
-                    reversedSequence = _reversecomplementDNA(input);
-                    reverseSequence = _reverseDNA(input);
-                    complementSequence = _complementDNA(input);
-                    sequence = input;
-                    textController.clear(); 
-                  });
-                },
-              ),
-              const SizedBox(height: 20.0),
-              const Text("Sequence", style: TextStyle(fontSize: 18, color: Color.fromARGB(255, 3, 87, 156)),),
-              const SizedBox(height: 20.0),
-              Text(sequence, style: const TextStyle(fontSize: 28.0, color: Colors.red, fontWeight: FontWeight.bold),),
-              const SizedBox(height: 20.0),
-              const Text(
-                'Reverse-Complement:',
-                style: TextStyle(fontSize: 18.0, color: Colors.blue),
-              ),
-              const SizedBox(height: 20.0),
-              Text(
-                reversedSequence,
-                style: const TextStyle(fontSize: 28.0, color: Colors.red, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 20),
-              const Text("Reverse:", style: TextStyle(fontSize: 18, color: Colors.cyanAccent),),
-              const SizedBox(height: 20),
-              Text(reverseSequence, style : const TextStyle(color: Colors.red, fontSize: 28.0, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 20,),
-              const Text("Complement:", style: TextStyle(fontSize: 18, color: Color.fromARGB(255, 0, 255, 128)),),
-              const SizedBox(height: 20,),
-              Text(complementSequence, style : const TextStyle(color: Colors.red, fontSize: 28.0, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 20,),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  String _reversecomplementDNA(String sequence) {
-    if (sequence.contains(RegExp(r'[^ATGC]'))) {
-      return "Invalid nucleotide(s)";
-    }
+    String _reversecomplementDNA(String sequence) {
     Map<String, String> complementMap = {
       'A': 'T',
       'T': 'A',
@@ -119,17 +44,12 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   String _reverseDNA(String sequence) {
-    if (sequence.contains(RegExp(r'[^ATGC]'))) {
-      return "Invalid nucleotide(s)";
-    }
 
     return sequence.split('').reversed.join();
   }
 
   String _complementDNA(String sequence) {
-    if (sequence.contains(RegExp(r'[^ATGC]'))) {
-      return "Invalid nucleotide(s)";
-    }
+
     Map<String, String> complementMap = {
       'A': 'T',
       'T': 'A',
@@ -142,5 +62,120 @@ class _MyHomePageState extends State<MyHomePage> {
     }).join();    
 
   }
+
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      darkTheme: ThemeData.dark(),
+      home: Scaffold(
+        floatingActionButton: FloatingActionButton(onPressed: () {
+          showDialog<String>(
+                        context: context, 
+                        builder: (BuildContext context) => AlertDialog(
+                          title: const Text('About'),
+                          content: const Text('Copyright 2024 Hacker-Anirudh. Licensed under GNU GPL v3 license.'),
+                          actions: <Widget>[
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, 'Close'),
+                              child: const Text('Close'),
+                            ),
+                           ]
+                          ),
+                        ); 
+        }, child: const Icon(Icons.info)),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              textField1(),
+              button1(context),
+              title('Reverse'),
+              seq(reverseSequence),
+              title('Complement'),
+              seq(complementSequence),
+              title('Reverse-Complement'),
+              seq(reversedSequence)
+            ],
+          )
+        ),
+      ),
+    );
+  }
+
+  Padding textField1() {
+    return Padding(
+              padding: const EdgeInsets.all(22.0),
+              child: SizedBox(
+                width: 420,
+                height: 69,
+                child: TextField(
+                  controller: textController,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: 'Enter the DNA sequence here.'
+                  ),
+                ),
+              ),
+            );
+  }
+
+  Padding button1(BuildContext context) {
+    return Padding(
+              padding: const EdgeInsets.all(22.0),
+              child: ElevatedButton(onPressed: () {
+                String input = textController.text.toUpperCase(); 
+                      if (input.contains(RegExp(r'[^ATGC]'))) {
+                       showDialog<String>(
+                        context: context, 
+                        builder: (BuildContext context) => AlertDialog(
+                          title: const Text('Error'),
+                          content: const Text('You have not entered a valid DNA sequence. Please try again'),
+                          actions: <Widget>[
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, 'OK'),
+                              child: const Text('OK'),
+                            ),
+                          ]
+                        ),
+                      ); 
+                      } else {
+                        setState(() {
+                          reversedSequence = _reversecomplementDNA(input);
+                          reverseSequence = _reverseDNA(input);
+                          complementSequence = _complementDNA(input);
+                          sequence = input;
+                        });
+                      }
+                textController.clear();   
+              }, 
+              child: const Text('Process')),
+            );
+  }
+
+  Padding title(String title) {
+    return Padding(
+      padding: const EdgeInsets.all(7),
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 31,
+        ), 
+      ),
+    );
+  }
+    Padding seq(String text) {
+      return Padding(
+        padding: const EdgeInsets.all(7),
+        child: Text(
+          text,
+          style: const TextStyle(
+            fontStyle: FontStyle.italic,
+            fontSize: 13,
+          ),
+        ),
+      );
+    }
 
 }
