@@ -90,6 +90,7 @@ class _HomePageState extends State<HomePage> {
             children: [
               textField1(),
               button1(context),
+              seq(sequence),
               title('Reverse'),
               seq(reverseSequence),
               title('Complement'),
