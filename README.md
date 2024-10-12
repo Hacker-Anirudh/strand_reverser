@@ -4,6 +4,7 @@ A simple (and pretty basic at present) app for doing doing stuff with DNA strand
 
 # Compatibility
 
+
 | Attribute | Minimum |
 | --- | | --- |
 | CPU | | Intel Core 2 Duo E6600 or equivalent AMD (recommended) |
