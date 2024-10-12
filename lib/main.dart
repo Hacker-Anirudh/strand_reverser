@@ -69,21 +69,7 @@ class _HomePageState extends State<HomePage> {
     return MaterialApp(
       darkTheme: ThemeData.dark(),
       home: Scaffold(
-        floatingActionButton: FloatingActionButton(onPressed: () {
-          showDialog<String>(
-                        context: context, 
-                        builder: (BuildContext context) => AlertDialog(
-                          title: const Text('About'),
-                          content: const Text('Copyright 2024 Hacker-Anirudh. Licensed under GNU GPL v3 license.'),
-                          actions: <Widget>[
-                            TextButton(
-                              onPressed: () => Navigator.pop(context, 'Close'),
-                              child: const Text('Close'),
-                            ),
-                           ]
-                          ),
-                        ); 
-        }, child: const Icon(Icons.info)),
+        floatingActionButton: infoButton(context),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -102,6 +88,24 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
     );
+  }
+
+  FloatingActionButton infoButton(BuildContext context) {
+    return FloatingActionButton(onPressed: () {
+        showDialog<String>(
+                      context: context, 
+                      builder: (BuildContext context) => AlertDialog(
+                        title: const Text('About'),
+                        content: const Text('Copyright 2024 Hacker-Anirudh. Licensed under GNU GPL v3 license.'),
+                        actions: <Widget>[
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, 'Close'),
+                            child: const Text('Close'),
+                          ),
+                         ]
+                        ),
+                      ); 
+      }, child: const Icon(Icons.info));
   }
 
   Padding textField1() {
