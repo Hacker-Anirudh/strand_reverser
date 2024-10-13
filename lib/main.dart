@@ -89,7 +89,7 @@ class HomePageState extends State<HomePage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     button2(),
-                    button3(context), // Pass context to button3
+                    button3(context), 
                   ],
                 ),
               )
@@ -213,29 +213,17 @@ class HomePageState extends State<HomePage> {
     );
   }
 
-  Padding button3(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: ElevatedButton(
-        onPressed: () async {
-          List<List<String>> rows = [
-            ['Input', 'Reverse', 'Complement', 'Reverse-Complement'],
-            [sequence, reverseSequence, complementSequence, reversedSequence],
-          ];
-          String csv = const ListToCsvConverter().convert(rows);
-          
-          final directory = await getApplicationDocumentsDirectory();
-          DateTime now = DateTime.now();
-          String formattedDate = DateFormat('kk:mm:ss:EEE:d:MMM').format(now);
-          final path = '${directory.path}/$formattedDate-dna_sequences.csv';
-          File file = File(path);
-          await file.writeAsString(csv);
-
+Padding button3(BuildContext context) {
+  return Padding(
+    padding: const EdgeInsets.all(8.0),
+    child: ElevatedButton(
+      onPressed: () async {
+        if (sequence.isEmpty) {
           showDialog<String>(
             context: context,
             builder: (BuildContext context) => AlertDialog(
-              title: const Text('Export Successful'),
-              content: Text('CSV exported to: $path'),
+              title: const Text('Error'),
+              content: const Text('No DNA sequence available to export.'),
               actions: <Widget>[
                 TextButton(
                   onPressed: () => Navigator.pop(context, 'OK'),
@@ -244,10 +232,41 @@ class HomePageState extends State<HomePage> {
               ],
             ),
           );
-        },
-        child: const Text('Export to CSV'),
-      ),
-    );
-  }
+          return;
+        }
+
+        List<List<String>> rows = [
+          ['Input', 'Reverse', 'Complement', 'Reverse-Complement'],
+          [sequence, reverseSequence, complementSequence, reversedSequence],
+        ];
+        String csv = const ListToCsvConverter().convert(rows);
+        
+        final directory = await getApplicationDocumentsDirectory();
+        DateTime now = DateTime.now();
+        String formattedDate = DateFormat('yyyy-MM-dd_HH-mm-ss').format(now);
+        final path = '${directory.path}/$formattedDate-dna_sequences.csv';
+        
+        File file = File(path);
+        await file.writeAsString(csv);
+
+        showDialog<String>(
+          context: context,
+          builder: (BuildContext context) => AlertDialog(
+            title: const Text('Export Successful'),
+            content: Text('CSV exported to: $path'),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () => Navigator.pop(context, 'OK'),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+      },
+      child: const Text('Export to CSV'),
+    ),
+  );
+}
+
 }
 
