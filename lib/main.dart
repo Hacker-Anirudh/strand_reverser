@@ -3,6 +3,8 @@ import 'package:csv/csv.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:intl/intl.dart';
+import 'package:file_picker/file_picker.dart';
+import 'dart:convert' show utf8;
 
 void main() {
   runApp(const MyApp());
@@ -88,8 +90,8 @@ class HomePageState extends State<HomePage> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    button2(),
-                    button3(context), 
+                    // button2(),
+                    button3(context),
                   ],
                 ),
               )
@@ -104,8 +106,22 @@ class HomePageState extends State<HomePage> {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: ElevatedButton(
-        onPressed: () {
-          //TODO : Implement this
+        onPressed: () async {
+          FilePickerResult? result = await FilePicker.platform.pickFiles(
+            allowedExtensions: ['csv'],
+            type: FileType.custom,
+          );
+
+          if (result != null) {
+            File file = File(result.files.single.path!);
+            final input = File(file.path).openRead();
+            final fields = await input
+                .transform(utf8.decoder)
+                .transform(const CsvToListConverter())
+                .toList();
+
+            print(fields);
+          } else {}
         },
         child: const Text('Import CSV file'),
       ),
@@ -119,7 +135,8 @@ class HomePageState extends State<HomePage> {
           context: context,
           builder: (BuildContext context) => AlertDialog(
             title: const Text('About'),
-            content: const Text('Copyright 2024 Hacker-Anirudh. Licensed under GNU GPL v3 license.'),
+            content: const Text(
+                'Copyright 2024 Hacker-Anirudh. Licensed under GNU GPL v3 license.'),
             actions: <Widget>[
               TextButton(
                 onPressed: () => Navigator.pop(context, 'Close'),
@@ -161,7 +178,8 @@ class HomePageState extends State<HomePage> {
               context: context,
               builder: (BuildContext context) => AlertDialog(
                 title: const Text('Error'),
-                content: const Text('You have not entered a valid DNA sequence. Please try again'),
+                content: const Text(
+                    'You have not entered a valid DNA sequence. Please try again'),
                 actions: <Widget>[
                   TextButton(
                     onPressed: () => Navigator.pop(context, 'OK'),
@@ -215,17 +233,48 @@ class HomePageState extends State<HomePage> {
     );
   }
 
-Padding button3(BuildContext context) { //TODO : Add ability to choose path 
-  return Padding(
-    padding: const EdgeInsets.all(8.0),
-    child: ElevatedButton(
-      onPressed: () async {
-        if (sequence.isEmpty) {
+  Padding button3(BuildContext context) {
+    //TODO : Add ability to choose path
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: ElevatedButton(
+        onPressed: () async {
+          if (sequence.isEmpty) {
+            showDialog<String>(
+              context: context,
+              builder: (BuildContext context) => AlertDialog(
+                title: const Text('Error'),
+                content: const Text('No DNA sequence available to export.'),
+                actions: <Widget>[
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, 'OK'),
+                    child: const Text('OK'),
+                  ),
+                ],
+              ),
+            );
+            return;
+          }
+
+          List<List<String>> rows = [
+            ['Input', 'Reverse', 'Complement', 'Reverse-Complement'],
+            [sequence, reverseSequence, complementSequence, reversedSequence],
+          ];
+          String csv = const ListToCsvConverter().convert(rows);
+
+          final directory = await getApplicationDocumentsDirectory();
+          DateTime now = DateTime.now();
+          String formattedDate = DateFormat('yyyy-MM-dd_HH-mm-ss').format(now);
+          final path = '${directory.path}/$formattedDate-dna_sequences.csv';
+
+          File file = File(path);
+          await file.writeAsString(csv);
+
           showDialog<String>(
             context: context,
             builder: (BuildContext context) => AlertDialog(
-              title: const Text('Error'),
-              content: const Text('No DNA sequence available to export.'),
+              title: const Text('Export Successful'),
+              content: Text('CSV exported to: $path'),
               actions: <Widget>[
                 TextButton(
                   onPressed: () => Navigator.pop(context, 'OK'),
@@ -234,41 +283,9 @@ Padding button3(BuildContext context) { //TODO : Add ability to choose path
               ],
             ),
           );
-          return;
-        }
-
-        List<List<String>> rows = [
-          ['Input', 'Reverse', 'Complement', 'Reverse-Complement'],
-          [sequence, reverseSequence, complementSequence, reversedSequence],
-        ];
-        String csv = const ListToCsvConverter().convert(rows);
-        
-        final directory = await getApplicationDocumentsDirectory();
-        DateTime now = DateTime.now();
-        String formattedDate = DateFormat('yyyy-MM-dd_HH-mm-ss').format(now);
-        final path = '${directory.path}/$formattedDate-dna_sequences.csv';
-        
-        File file = File(path);
-        await file.writeAsString(csv);
-
-        showDialog<String>(
-          context: context,
-          builder: (BuildContext context) => AlertDialog(
-            title: const Text('Export Successful'),
-            content: Text('CSV exported to: $path'),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () => Navigator.pop(context, 'OK'),
-                child: const Text('OK'),
-              ),
-            ],
-          ),
-        );
-      },
-      child: const Text('Export to CSV'),
-    ),
-  );
+        },
+        child: const Text('Export to CSV'),
+      ),
+    );
+  }
 }
-
-}
-
