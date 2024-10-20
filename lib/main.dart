@@ -1,3 +1,6 @@
+//This project is STRICTLY for Windows, macOS, or GNU/Linux. This is due to the more open nature of these platforms making it easier to develop for.
+
+
 import 'package:flutter/material.dart';
 import 'package:csv/csv.dart';
 import 'dart:io';
@@ -6,7 +9,13 @@ import 'package:intl/intl.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:convert' show utf8;
 
+void creDir() async {
+  final directory = await getApplicationDocumentsDirectory();
+  Directory('${directory.path}/strand_reverser/').create(recursive: true);
+}
+
 void main() {
+  creDir();
   runApp(const MyApp());
 }
 
@@ -265,7 +274,7 @@ class HomePageState extends State<HomePage> {
           final directory = await getApplicationDocumentsDirectory();
           DateTime now = DateTime.now();
           String formattedDate = DateFormat('yyyy-MM-dd_HH-mm-ss').format(now);
-          final path = '${directory.path}/$formattedDate-dna_sequences.csv';
+          final path = '${directory.path}/strand_reverser/$formattedDate-dna_sequences.csv';
 
           File file = File(path);
           await file.writeAsString(csv);
