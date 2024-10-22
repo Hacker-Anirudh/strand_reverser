@@ -1,5 +1,4 @@
-//This project is STRICTLY for Windows, macOS, or GNU/Linux. This is due to the more open nature of these platforms making it easier to develop for.
-
+// This project is STRICTLY for Windows, macOS, or GNU/Linux. This is due to the more open nature of these platforms making it easier to develop for.
 
 import 'package:flutter/material.dart';
 import 'package:csv/csv.dart';
@@ -9,15 +8,13 @@ import 'package:intl/intl.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:convert' show utf8;
 
-void creDir() async {
-  final directory = await getApplicationDocumentsDirectory();
-  Directory('${directory.path}/strand_reverser/').create(recursive: true);
-}
+// The main function. Duh.
 
 void main() {
-  creDir();
   runApp(const MyApp());
 }
+
+// Main app function
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -30,6 +27,8 @@ class MyApp extends StatelessWidget {
   }
 }
 
+// Homepage class
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -37,10 +36,14 @@ class HomePage extends StatefulWidget {
   HomePageState createState() => HomePageState();
 }
 
+// Declare variables for the seqeunces later
+
 String reversedSequence = '';
 String reverseSequence = '';
 String complementSequence = '';
 String sequence = '';
+
+// This contains most of the logic of the app
 
 class HomePageState extends State<HomePage> {
   TextEditingController textController = TextEditingController();
@@ -74,6 +77,8 @@ class HomePageState extends State<HomePage> {
       return complementMap[nucleotide];
     }).join();
   }
+
+  // This is the MaterialApp widget for the app
 
   @override
   Widget build(BuildContext context) {
@@ -111,6 +116,8 @@ class HomePageState extends State<HomePage> {
     );
   }
 
+  // nonfunctional
+
   Padding button2() {
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -129,7 +136,6 @@ class HomePageState extends State<HomePage> {
                 .transform(const CsvToListConverter())
                 .toList();
 
-            print(fields);
           } else {}
         },
         child: const Text('Import CSV file'),
@@ -274,7 +280,7 @@ class HomePageState extends State<HomePage> {
           final directory = await getApplicationDocumentsDirectory();
           DateTime now = DateTime.now();
           String formattedDate = DateFormat('yyyy-MM-dd_HH-mm-ss').format(now);
-          final path = '${directory.path}/strand_reverser/$formattedDate-dna_sequences.csv';
+          final path = '${directory.path}/$formattedDate-dna_sequences.csv';
 
           File file = File(path);
           await file.writeAsString(csv);
@@ -286,7 +292,13 @@ class HomePageState extends State<HomePage> {
               content: Text('CSV exported to: $path'),
               actions: <Widget>[
                 TextButton(
-                  onPressed: () => Navigator.pop(context, 'OK'),
+                  onPressed: () {
+                    if (context.mounted) {
+                      Navigator.pop(context, 'OK');
+                    } else {
+                      exit(0);
+                    }
+                  },
                   child: const Text('OK'),
                 ),
               ],
