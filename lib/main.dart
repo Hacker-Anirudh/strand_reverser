@@ -120,19 +120,12 @@ class HomePageState extends State<HomePage> {
   FloatingActionButton infoButton(BuildContext context) {
     return FloatingActionButton(
       onPressed: () {
-        showDialog<String>(
+        showAboutDialog(
           context: context,
-          builder: (BuildContext context) => AlertDialog(
-            title: const Text('About'),
-            content: const Text(
-                'Copyright 2024 Hacker-Anirudh. Licensed under GNU GPL v3 license.'),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () => Navigator.pop(context, 'Close'),
-                child: const Text('Close'),
-              ),
-            ],
-          ),
+          applicationName: 'DNA Strand Reverser',
+          applicationVersion: '1.0.1',
+          applicationLegalese: 'GNU GPL v3 License',
+          applicationIcon: Image.asset('assets/strand_reverser64.png'),
         );
       },
       child: const Icon(Icons.info),
@@ -257,7 +250,11 @@ class HomePageState extends State<HomePage> {
           ];
           String csv = const ListToCsvConverter().convert(rows);
 
-          final directory = await FilePicker.platform.getDirectoryPath();
+          String? directory =  await FilePicker.platform.getDirectoryPath();
+          
+          if (directory == null) {
+            return;
+          }
           DateTime now = DateTime.now();
           String formattedDate = DateFormat('yyyy-MM-dd_HH-mm-ss').format(now);
           final path = '$directory/$formattedDate-dna_sequences.csv';
