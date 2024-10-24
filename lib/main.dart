@@ -3,10 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:csv/csv.dart';
 import 'dart:io';
-import 'package:path_provider/path_provider.dart';
 import 'package:intl/intl.dart';
 import 'package:file_picker/file_picker.dart';
-import 'dart:convert' show utf8;
 
 // The main function. Duh.
 
@@ -42,7 +40,10 @@ String reversedSequence = '';
 String reverseSequence = '';
 String complementSequence = '';
 String sequence = '';
-
+String reversedSequence1 = '';
+String reverseSequence1 = '';
+String complementSequence1 = '';
+String sequence1 = '';
 // This contains most of the logic of the app
 
 class HomePageState extends State<HomePage> {
@@ -112,33 +113,6 @@ class HomePageState extends State<HomePage> {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  // nonfunctional
-
-  Padding button2() {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: ElevatedButton(
-        onPressed: () async {
-          FilePickerResult? result = await FilePicker.platform.pickFiles(
-            allowedExtensions: ['csv'],
-            type: FileType.custom,
-          );
-
-          if (result != null) {
-            File file = File(result.files.single.path!);
-            final input = File(file.path).openRead();
-            final fields = await input
-                .transform(utf8.decoder)
-                .transform(const CsvToListConverter())
-                .toList();
-
-          } else {}
-        },
-        child: const Text('Import CSV file'),
       ),
     );
   }
@@ -249,7 +223,6 @@ class HomePageState extends State<HomePage> {
   }
 
   Padding button3(BuildContext context) {
-    //TODO : Add ability to choose path
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: ElevatedButton(
@@ -257,16 +230,23 @@ class HomePageState extends State<HomePage> {
           if (sequence.isEmpty) {
             showDialog<String>(
               context: context,
-              builder: (BuildContext context) => AlertDialog(
-                title: const Text('Error'),
-                content: const Text('No DNA sequence available to export.'),
-                actions: <Widget>[
-                  TextButton(
-                    onPressed: () => Navigator.pop(context, 'OK'),
-                    child: const Text('OK'),
+              builder: (BuildContext context) =>
+                  AlertDialog(
+                    title: const Text('Error'),
+                    content: const Text('No DNA sequence available to export.'),
+                    actions: <Widget>[
+                      TextButton(
+                        onPressed: () {
+                          if (context.mounted) {
+                            Navigator.pop(context, 'OK');
+                          } else {
+                            exit(0);
+                          }
+                        },
+                        child: const Text('OK'),
+                      ),
+                    ],
                   ),
-                ],
-              ),
             );
             return;
           }
@@ -277,34 +257,38 @@ class HomePageState extends State<HomePage> {
           ];
           String csv = const ListToCsvConverter().convert(rows);
 
-          final directory = await getApplicationDocumentsDirectory();
+          final directory = await FilePicker.platform.getDirectoryPath();
           DateTime now = DateTime.now();
           String formattedDate = DateFormat('yyyy-MM-dd_HH-mm-ss').format(now);
-          final path = '${directory.path}/$formattedDate-dna_sequences.csv';
+          final path = '$directory/$formattedDate-dna_sequences.csv';
 
           File file = File(path);
           await file.writeAsString(csv);
-
-          showDialog<String>(
-            context: context,
-            builder: (BuildContext context) => AlertDialog(
-              title: const Text('Export Successful'),
-              content: Text('CSV exported to: $path'),
-              actions: <Widget>[
-                TextButton(
-                  onPressed: () {
-                    if (context.mounted) {
-                      Navigator.pop(context, 'OK');
-                    } else {
-                      exit(0);
-                    }
-                  },
-                  child: const Text('OK'),
-                ),
-              ],
-            ),
-          );
-        },
+          if (context.mounted) {
+            showDialog<String>(
+              context: context,
+              builder: (BuildContext context) =>
+                  AlertDialog(
+                    title: const Text('Export Successful'),
+                    content: Text('CSV exported to: $path'),
+                    actions: <Widget>[
+                      TextButton(
+                        onPressed: () {
+                          if (context.mounted) {
+                            Navigator.pop(context, 'OK');
+                          } else {
+                            exit(0);
+                          }
+                        },
+                        child: const Text('OK'),
+                      ),
+                    ],
+                  ),
+            );
+          } else {
+            exit(0);
+          }
+          },
         child: const Text('Export to CSV'),
       ),
     );
