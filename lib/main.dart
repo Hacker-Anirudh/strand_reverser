@@ -5,6 +5,7 @@ import 'package:csv/csv.dart';
 import 'dart:io';
 import 'package:intl/intl.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:logger/logger.dart';
 
 // The main function. Duh.
 
@@ -40,44 +41,11 @@ String reversedSequence = '';
 String reverseSequence = '';
 String complementSequence = '';
 String sequence = '';
-String reversedSequence1 = '';
-String reverseSequence1 = '';
-String complementSequence1 = '';
-String sequence1 = '';
 // This contains most of the logic of the app
 
 class HomePageState extends State<HomePage> {
   TextEditingController textController = TextEditingController();
-
-  String _reversecomplementDNA(String sequence) {
-    Map<String, String> complementMap = {
-      'A': 'T',
-      'T': 'A',
-      'C': 'G',
-      'G': 'C',
-    };
-
-    return sequence.split('').toList().reversed.map((nucleotide) {
-      return complementMap[nucleotide];
-    }).join();
-  }
-
-  String _reverseDNA(String sequence) {
-    return sequence.split('').reversed.join();
-  }
-
-  String _complementDNA(String sequence) {
-    Map<String, String> complementMap = {
-      'A': 'T',
-      'T': 'A',
-      'C': 'G',
-      'G': 'C',
-    };
-
-    return sequence.split('').toList().map((nucleotide) {
-      return complementMap[nucleotide];
-    }).join();
-  }
+  var logger = Logger();
 
   // This is the MaterialApp widget for the app
 
@@ -105,7 +73,7 @@ class HomePageState extends State<HomePage> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // button2(),
+                    button2(context),
                     button3(context),
                   ],
                 ),
@@ -114,6 +82,24 @@ class HomePageState extends State<HomePage> {
           ),
         ),
       ),
+    );
+  }
+
+  // Helper function to show error dialogs
+  void showErrorDialog(BuildContext context, String message) {
+    showDialog<String>(
+      context: context,
+      builder: (BuildContext context) =>
+          AlertDialog(
+            title: const Text('Error'),
+            content: Text(message),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () => Navigator.pop(context, 'OK'),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
     );
   }
 
@@ -156,20 +142,7 @@ class HomePageState extends State<HomePage> {
         onPressed: () {
           String input = textController.text.toUpperCase();
           if (input.contains(RegExp(r'[^ATGC]'))) {
-            showDialog<String>(
-              context: context,
-              builder: (BuildContext context) => AlertDialog(
-                title: const Text('Error'),
-                content: const Text(
-                    'You have not entered a valid DNA sequence. Please try again'),
-                actions: <Widget>[
-                  TextButton(
-                    onPressed: () => Navigator.pop(context, 'OK'),
-                    child: const Text('OK'),
-                  ),
-                ],
-              ),
-            );
+            showErrorDialog(context, 'You have not entered a valid DNA sequence, please try again.');
           } else {
             setstat(input);
           }
@@ -178,15 +151,6 @@ class HomePageState extends State<HomePage> {
         child: const Text('Process'),
       ),
     );
-  }
-
-  void setstat(String input) {
-    return setState(() {
-      reversedSequence = _reversecomplementDNA(input);
-      reverseSequence = _reverseDNA(input);
-      complementSequence = _complementDNA(input);
-      sequence = input;
-    });
   }
 
   Padding title(String title) {
@@ -202,6 +166,114 @@ class HomePageState extends State<HomePage> {
     );
   }
 
+  Padding button3(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: ElevatedButton(
+        onPressed: () async {
+          await exportLogic(context, sequence, reverseSequence, reversedSequence,
+              complementSequence);
+        },
+        child: const Text('Export to CSV'),
+      ),);
+  }
+
+  Padding button2(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: ElevatedButton(
+          onPressed: () => importLogic(context),
+          child: const Text ('Import and process CSV')),
+
+    );
+  }
+
+  String _reversecomplementDNA(String sequence) {
+    Map<String, String> complementMap = {
+      'A': 'T',
+      'T': 'A',
+      'C': 'G',
+      'G': 'C',
+    };
+
+    return sequence
+        .split('')
+        .toList()
+        .reversed
+        .map((nucleotide) {
+      return complementMap[nucleotide];
+    }).join();
+  }
+
+  String _reverseDNA(String sequence) {
+    return sequence
+        .split('')
+        .reversed
+        .join();
+  }
+
+  String _complementDNA(String sequence) {
+    Map<String, String> complementMap = {
+      'A': 'T',
+      'T': 'A',
+      'C': 'G',
+      'G': 'C',
+    };
+
+    return sequence.split('').toList().map((nucleotide) {
+      return complementMap[nucleotide];
+    }).join();
+  }
+
+  Future<void> exportLogic(BuildContext context, String sequence,
+      String reverseSequence, String reversedSequence,
+      String complementSequence) async {
+
+      if (sequence.isEmpty) {
+        showErrorDialog(context, 'No valid DNA sequence detected.');
+      }
+        List<List<String>> rows = [
+          ['Input', 'Reverse', 'Complement', 'Reverse-Complement'],
+          [sequence, reverseSequence, complementSequence, reversedSequence],
+        ];
+        String csv = const ListToCsvConverter().convert(rows);
+
+          String? path = await makeFileName('dna_sequence');
+      try {
+          File file = File(path as String);
+          await file.writeAsString(csv);
+        } catch (error) {
+          showErrorDialog(context, 'A error occured while exporting : $error');
+        }
+        if (context.mounted) {
+          showDialog<String>(
+            context: context,
+            builder: (BuildContext context) =>
+                AlertDialog(
+                  title: const Text('Export Successful'),
+                  content: Text('CSV exported to: $path'),
+                  actions: <Widget>[
+                    TextButton(
+                      onPressed: () {
+                        if (context.mounted) {
+                          Navigator.pop(context, 'OK');
+                        } else {
+                          logger.f(
+                              'App terminating due to context not being mounted');
+                          exit(0);
+                        }
+                      },
+                      child: const Text('OK'),
+                    ),
+                  ],
+                ),
+          );
+        } else {
+          exit(0);
+        }
+      }
+
+
   Padding seq(String text) {
     return Padding(
       padding: const EdgeInsets.all(7),
@@ -215,79 +287,92 @@ class HomePageState extends State<HomePage> {
     );
   }
 
-  Padding button3(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: ElevatedButton(
-        onPressed: () async {
-          if (sequence.isEmpty) {
-            showDialog<String>(
-              context: context,
-              builder: (BuildContext context) =>
-                  AlertDialog(
-                    title: const Text('Error'),
-                    content: const Text('No DNA sequence available to export.'),
-                    actions: <Widget>[
-                      TextButton(
-                        onPressed: () {
-                          if (context.mounted) {
-                            Navigator.pop(context, 'OK');
-                          } else {
-                            exit(0);
-                          }
-                        },
-                        child: const Text('OK'),
-                      ),
-                    ],
-                  ),
-            );
-            return;
+  void setstat(String input) {
+    return setState(() {
+      reversedSequence = _reversecomplementDNA(input);
+      reverseSequence = _reverseDNA(input);
+      complementSequence = _complementDNA(input);
+      sequence = input;
+    });
+  }
+
+  Future<void> importLogic(BuildContext context) async {
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['csv'],
+      );
+
+      if (result != null) {
+        File file = File(result.files.single.path!);
+        final csvData = await file.readAsString();
+        List<String> rows = csvData.split('\n').map((row) => row.trim()).toList();
+        rows.removeWhere((row) => row.isEmpty || row == 'Sequences');
+        List<List<String>> outputRows = [
+          ['Sequence', 'Reverse', 'Reverse-Complement', 'Complement']
+        ];
+        List<String> invalidSequences = [];
+
+        for (String inputSequence in rows) {
+          inputSequence = inputSequence.toUpperCase();
+
+          if (inputSequence.contains(RegExp(r'[^ATGC]'))) {
+            invalidSequences.add(inputSequence);
+            continue;  // Skip invalid sequence
           }
 
-          List<List<String>> rows = [
-            ['Input', 'Reverse', 'Complement', 'Reverse-Complement'],
-            [sequence, reverseSequence, complementSequence, reversedSequence],
-          ];
-          String csv = const ListToCsvConverter().convert(rows);
+          String reverse = _reverseDNA(inputSequence);
+          String complement = _complementDNA(inputSequence);
+          String reverseComplement = _reversecomplementDNA(inputSequence);
+          outputRows.add([inputSequence, reverse, reverseComplement, complement]);
+        }
 
-          String? directory =  await FilePicker.platform.getDirectoryPath();
-          
-          if (directory == null) {
-            return;
+        String? outputFilePath = await makeFileName('processed_sequences');
+        if (outputFilePath != null) {
+          File outputFile = File(outputFilePath);
+          String csvOutput = const ListToCsvConverter().convert(outputRows);
+          await outputFile.writeAsString(csvOutput);
+
+          String dialogMessage = 'CSV exported to: $outputFilePath';
+          if (invalidSequences.isNotEmpty) {
+            dialogMessage += '\n\nInvalid sequences skipped:\n${invalidSequences.join(", ")}';
           }
-          DateTime now = DateTime.now();
-          String formattedDate = DateFormat('yyyy-MM-dd_HH-mm-ss').format(now);
-          final path = '$directory/$formattedDate-dna_sequences.csv';
 
-          File file = File(path);
-          await file.writeAsString(csv);
           if (context.mounted) {
             showDialog<String>(
               context: context,
-              builder: (BuildContext context) =>
-                  AlertDialog(
-                    title: const Text('Export Successful'),
-                    content: Text('CSV exported to: $path'),
-                    actions: <Widget>[
-                      TextButton(
-                        onPressed: () {
-                          if (context.mounted) {
-                            Navigator.pop(context, 'OK');
-                          } else {
-                            exit(0);
-                          }
-                        },
-                        child: const Text('OK'),
-                      ),
-                    ],
+              builder: (BuildContext context) => AlertDialog(
+                title: const Text('Export Successful'),
+                content: Text(dialogMessage),
+                actions: <Widget>[
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, 'OK'),
+                    child: const Text('OK'),
                   ),
+                ],
+              ),
             );
-          } else {
-            exit(0);
           }
-          },
-        child: const Text('Export to CSV'),
-      ),
-    );
+        } else {
+          showErrorDialog(context, 'Unable to create output file.');
+        }
+      } else {
+        showErrorDialog(context, 'No file selected.');
+      }
+    } catch (e) {
+      showErrorDialog(context, 'An error occurred while importing and exporting: $e');
+    }
+  }
+
+  Future<String?> makeFileName(String name) async {
+    String? directory = await FilePicker.platform.getDirectoryPath();
+
+    if (directory == null) {
+      return null;
+    }
+    DateTime now = DateTime.now();
+    String formattedDate = DateFormat('yyyy-MM-dd_HH-mm-ss').format(now);
+    final path = '$directory/$formattedDate-$name.csv';
+    return path;
   }
 }
