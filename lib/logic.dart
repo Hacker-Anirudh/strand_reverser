@@ -29,6 +29,5 @@ class Logic {
       return _complementMap[nucleotide];
     }).join();
   }
-
-
 }
+

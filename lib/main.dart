@@ -323,7 +323,7 @@ class HomePageState extends State<HomePage> {
         showErrorDialog(context, 'No file selected.');
       }
     } catch (e) {
-      showErrorDialog(context, 'An error occurred while importing and exporting: $e');
+      showErrorDialog(context, 'An error occurred while importing or exporting: $e');
     }
   }
 
