@@ -6,7 +6,7 @@ import 'dart:io';
 import 'package:intl/intl.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:logger/logger.dart';
-
+import 'logic.dart';
 // The main function. Duh.
 
 void main() {
@@ -188,43 +188,6 @@ class HomePageState extends State<HomePage> {
     );
   }
 
-  String _reversecomplementDNA(String sequence) {
-    Map<String, String> complementMap = {
-      'A': 'T',
-      'T': 'A',
-      'C': 'G',
-      'G': 'C',
-    };
-
-    return sequence
-        .split('')
-        .toList()
-        .reversed
-        .map((nucleotide) {
-      return complementMap[nucleotide];
-    }).join();
-  }
-
-  String _reverseDNA(String sequence) {
-    return sequence
-        .split('')
-        .reversed
-        .join();
-  }
-
-  String _complementDNA(String sequence) {
-    Map<String, String> complementMap = {
-      'A': 'T',
-      'T': 'A',
-      'C': 'G',
-      'G': 'C',
-    };
-
-    return sequence.split('').toList().map((nucleotide) {
-      return complementMap[nucleotide];
-    }).join();
-  }
-
   Future<void> exportLogic(BuildContext context, String sequence,
       String reverseSequence, String reversedSequence,
       String complementSequence) async {
@@ -289,9 +252,9 @@ class HomePageState extends State<HomePage> {
 
   void setstat(String input) {
     return setState(() {
-      reversedSequence = _reversecomplementDNA(input);
-      reverseSequence = _reverseDNA(input);
-      complementSequence = _complementDNA(input);
+      reversedSequence = Logic.reversecomplementDNA(input);
+      reverseSequence = Logic.reverseDNA(input);
+      complementSequence = Logic.complementDNA(input);
       sequence = input;
     });
   }
@@ -321,9 +284,9 @@ class HomePageState extends State<HomePage> {
             continue;  // Skip invalid sequence
           }
 
-          String reverse = _reverseDNA(inputSequence);
-          String complement = _complementDNA(inputSequence);
-          String reverseComplement = _reversecomplementDNA(inputSequence);
+          String reverse = Logic.reverseDNA(inputSequence);
+          String complement = Logic.complementDNA(inputSequence);
+          String reverseComplement = Logic.reversecomplementDNA(inputSequence);
           outputRows.add([inputSequence, reverse, reverseComplement, complement]);
         }
 
