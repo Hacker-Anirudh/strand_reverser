@@ -142,7 +142,8 @@ class HomePageState extends State<HomePage> {
         onPressed: () {
           String input = textController.text.toUpperCase();
           if (input.contains(RegExp(r'[^ATGC]'))) {
-            showErrorDialog(context, 'You have not entered a valid DNA sequence, please try again.');
+            showErrorDialog(context,
+                'You have not entered a valid DNA sequence, please try again.');
           } else {
             setstat(input);
           }
@@ -171,7 +172,8 @@ class HomePageState extends State<HomePage> {
       padding: const EdgeInsets.all(8.0),
       child: ElevatedButton(
         onPressed: () async {
-          await exportLogic(context, sequence, reverseSequence, reversedSequence,
+          await exportLogic(
+              context, sequence, reverseSequence, reversedSequence,
               complementSequence);
         },
         child: const Text('Export to CSV'),
@@ -191,23 +193,25 @@ class HomePageState extends State<HomePage> {
   Future<void> exportLogic(BuildContext context, String sequence,
       String reverseSequence, String reversedSequence,
       String complementSequence) async {
+    if (sequence.isEmpty) {
+      showErrorDialog(context, 'No valid DNA sequence detected.');
+    } else {
+      List<List<String>> rows = [
+        ['Input', 'Reverse', 'Complement', 'Reverse-Complement'],
+        [sequence, reverseSequence, complementSequence, reversedSequence],
+      ];
+      String csv = const ListToCsvConverter().convert(rows);
 
-      if (sequence.isEmpty) {
-        showErrorDialog(context, 'No valid DNA sequence detected.');
-      }
-        List<List<String>> rows = [
-          ['Input', 'Reverse', 'Complement', 'Reverse-Complement'],
-          [sequence, reverseSequence, complementSequence, reversedSequence],
-        ];
-        String csv = const ListToCsvConverter().convert(rows);
+      String? path = await makeFileName('dna_sequence');
 
-          String? path = await makeFileName('dna_sequence');
-      try {
-          File file = File(path as String);
+      if (path != null) {
+        try {
+          File file = File(path);
           await file.writeAsString(csv);
         } catch (error) {
-          showErrorDialog(context, 'A error occured while exporting : $error');
+          showErrorDialog(context, 'An error occured while exporting : $error');
         }
+
         if (context.mounted) {
           showDialog<String>(
             context: context,
@@ -234,7 +238,11 @@ class HomePageState extends State<HomePage> {
         } else {
           exit(0);
         }
+      } else {
+        showErrorDialog(context, 'Failed to generate file path.');
       }
+    }
+  }
 
 
   Padding seq(String text) {
@@ -269,7 +277,10 @@ class HomePageState extends State<HomePage> {
       if (result != null) {
         File file = File(result.files.single.path!);
         final csvData = await file.readAsString();
-        List<String> rows = csvData.split('\n').map((row) => row.trim()).toList();
+        List<String> rows = csvData
+            .split('\n')
+            .map((row) => row.trim())
+            .toList();
         rows.removeWhere((row) => row.isEmpty || row == 'Sequences');
         List<List<String>> outputRows = [
           ['Sequence', 'Reverse', 'Reverse-Complement', 'Complement']
@@ -281,13 +292,14 @@ class HomePageState extends State<HomePage> {
 
           if (inputSequence.contains(RegExp(r'[^ATGC]'))) {
             invalidSequences.add(inputSequence);
-            continue;  // Skip invalid sequence
+            continue; // Skip invalid sequence
           }
 
           String reverse = Logic.reverseDNA(inputSequence);
           String complement = Logic.complementDNA(inputSequence);
           String reverseComplement = Logic.reversecomplementDNA(inputSequence);
-          outputRows.add([inputSequence, reverse, reverseComplement, complement]);
+          outputRows.add(
+              [inputSequence, reverse, reverseComplement, complement]);
         }
 
         String? outputFilePath = await makeFileName('processed_sequences');
@@ -298,22 +310,24 @@ class HomePageState extends State<HomePage> {
 
           String dialogMessage = 'CSV exported to: $outputFilePath';
           if (invalidSequences.isNotEmpty) {
-            dialogMessage += '\n\nInvalid sequences skipped:\n${invalidSequences.join(", ")}';
+            dialogMessage +=
+            '\n\nInvalid sequences skipped:\n${invalidSequences.join(", ")}';
           }
 
           if (context.mounted) {
             showDialog<String>(
               context: context,
-              builder: (BuildContext context) => AlertDialog(
-                title: const Text('Export Successful'),
-                content: Text(dialogMessage),
-                actions: <Widget>[
-                  TextButton(
-                    onPressed: () => Navigator.pop(context, 'OK'),
-                    child: const Text('OK'),
+              builder: (BuildContext context) =>
+                  AlertDialog(
+                    title: const Text('Export Successful'),
+                    content: Text(dialogMessage),
+                    actions: <Widget>[
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, 'OK'),
+                        child: const Text('OK'),
+                      ),
+                    ],
                   ),
-                ],
-              ),
             );
           }
         } else {
@@ -323,19 +337,26 @@ class HomePageState extends State<HomePage> {
         showErrorDialog(context, 'No file selected.');
       }
     } catch (e) {
-      showErrorDialog(context, 'An error occurred while importing or exporting: $e');
+      showErrorDialog(
+          context, 'An error occurred while importing or exporting: $e');
     }
   }
 
   Future<String?> makeFileName(String name) async {
     String? directory = await FilePicker.platform.getDirectoryPath();
-
-    if (directory == null) {
-      return null;
-    }
     DateTime now = DateTime.now();
     String formattedDate = DateFormat('yyyy-MM-dd_HH-mm-ss').format(now);
-    final path = '$directory/$formattedDate-$name.csv';
-    return path;
+
+    if (directory == null) {
+      // Providing better default directories based on the platform.
+      if (Platform.isWindows) {
+        directory = Platform.environment['USERPROFILE'] ?? 'C:\\Users\\Public';
+      } else if (Platform.isLinux || Platform.isMacOS) {
+        directory = Platform.environment['HOME'] ?? '/home';
+      }
+      directory = '$directory/Downloads'; // Assuming Downloads as fallback
+    }
+      final path = '$directory/$formattedDate-$name.csv';
+      return path;
   }
 }
