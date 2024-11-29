@@ -35,7 +35,7 @@ class HomePage extends StatefulWidget {
   HomePageState createState() => HomePageState();
 }
 
-// Declare variables for the seqeunces later
+// Declare variables for the sequences later
 
 String reversedSequence = '';
 String reverseSequence = '';
@@ -128,7 +128,7 @@ class HomePageState extends State<HomePage> {
             Shared.showErrorDialog(context,
                 'You have not entered a valid DNA sequence, please try again.');
           } else {
-            setstat(input);
+            setstate(input);
           }
           textController.clear();
         },
@@ -192,7 +192,7 @@ class HomePageState extends State<HomePage> {
           File file = File(path);
           await file.writeAsString(csv);
         } catch (error) {
-          Shared.showErrorDialog(context, 'An error occured while exporting : $error');
+          Shared.showErrorDialog(context, 'An error occurred while exporting : $error');
         }
 
         if (context.mounted) {
@@ -241,7 +241,7 @@ class HomePageState extends State<HomePage> {
     );
   }
 
-  void setstat(String input) {
+  void setstate(String input) {
     return setState(() {
       reversedSequence = Logic.reversecomplementDNA(input);
       reverseSequence = Logic.reverseDNA(input);
