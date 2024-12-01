@@ -1,11 +1,8 @@
 // This project is STRICTLY for Windows, macOS, or GNU/Linux. This is due to the more open nature of these platforms making it easier to develop for.
-
+import 'exportlogic.dart';
 import 'package:flutter/material.dart';
-import 'package:csv/csv.dart';
-import 'dart:io';
 import 'importlogic.dart';
 import 'shared.dart';
-import 'package:logger/logger.dart';
 import 'logic.dart';
 // The main function. Duh.
 
@@ -45,7 +42,6 @@ String sequence = '';
 
 class HomePageState extends State<HomePage> {
   TextEditingController textController = TextEditingController();
-  var logger = Logger();
 
   // This is the MaterialApp widget for the app
 
@@ -173,61 +169,6 @@ class HomePageState extends State<HomePage> {
     );
   }
 
-  Future<void> exportLogic(BuildContext context, String sequence,
-      String reverseSequence, String reversedSequence,
-      String complementSequence) async {
-    if (sequence.isEmpty) {
-      Shared.showErrorDialog(context, 'No valid DNA sequence detected.');
-    } else {
-      List<List<String>> rows = [
-        ['Input', 'Reverse', 'Complement', 'Reverse-Complement'],
-        [sequence, reverseSequence, complementSequence, reversedSequence],
-      ];
-      String csv = const ListToCsvConverter().convert(rows);
-
-      String? path = await Shared.makeFileName('dna_sequence');
-
-      if (path != null) {
-        try {
-          File file = File(path);
-          await file.writeAsString(csv);
-        } catch (error) {
-          Shared.showErrorDialog(context, 'An error occurred while exporting : $error');
-        }
-
-        if (context.mounted) {
-          showDialog<String>(
-            context: context,
-            builder: (BuildContext context) =>
-                AlertDialog(
-                  title: const Text('Export Successful'),
-                  content: Text('CSV exported to: $path'),
-                  actions: <Widget>[
-                    TextButton(
-                      onPressed: () {
-                        if (context.mounted) {
-                          Navigator.pop(context, 'OK');
-                        } else {
-                          logger.f(
-                              'App terminating due to context not being mounted');
-                          exit(0);
-                        }
-                      },
-                      child: const Text('OK'),
-                    ),
-                  ],
-                ),
-          );
-        } else {
-          exit(0);
-        }
-      } else {
-        Shared.showErrorDialog(context, 'Failed to generate file path.');
-      }
-    }
-  }
-
-
   Padding seq(String text) {
     return Padding(
       padding: const EdgeInsets.all(7),
@@ -249,8 +190,4 @@ class HomePageState extends State<HomePage> {
       sequence = input;
     });
   }
-
-  
-
-
 }

@@ -22,7 +22,7 @@ Future<void> exportLogic(BuildContext context, String sequence,
           File file = File(path);
           await file.writeAsBytes(csv as List<int>);
         } catch (error) {
-          Shared.showErrorDialog(context, 'An error occured while exporting : $error');
+          Shared.showErrorDialog(context, 'An error occurred while exporting : $error');
         }
 
         if (context.mounted) {
