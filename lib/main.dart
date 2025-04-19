@@ -41,6 +41,7 @@ String sequence = '';
 // This contains most of the logic of the app
 
 class HomePageState extends State<HomePage> {
+  bool isDark = true;
   TextEditingController textController = TextEditingController();
 
   // This is the MaterialApp widget for the app
@@ -48,13 +49,21 @@ class HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      darkTheme: ThemeData.dark(),
+      theme: ThemeData(
+        useMaterial3: true,
+        brightness: isDark ? Brightness.dark : Brightness.light,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.lightBlueAccent,
+          brightness: isDark ? Brightness.dark : Brightness.light,
+        ),
+      ),
       home: Scaffold(
-        floatingActionButton: infoButton(context),
+        floatingActionButton: changemode(),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              button5(context),
               textField1(),
               button1(context),
               seq(sequence),
@@ -81,25 +90,28 @@ class HomePageState extends State<HomePage> {
     );
   }
 
-
-  FloatingActionButton infoButton(BuildContext context) {
+  FloatingActionButton changemode() {
     return FloatingActionButton(
-      onPressed: () {
-        showAboutDialog(
-          context: context,
-          applicationName: 'DNA Strand Reverser',
-          applicationVersion: '1.0.1',
-          applicationLegalese: 'GNU GPL v3 License',
-          applicationIcon: Image.asset('assets/strand_reverser64.png'),
-        );
-      },
-      child: const Icon(Icons.info),
+      onPressed: () {},
+      child: Tooltip(
+        message: 'Switch mode',
+        child: IconButton(
+          isSelected: isDark,
+          onPressed: () {
+            setState(() {
+              isDark = !isDark;
+            });
+          },
+          icon: const Icon(Icons.wb_sunny_outlined),
+          selectedIcon: const Icon(Icons.brightness_2_outlined),
+        ),
+      ),
     );
   }
 
   Padding textField1() {
     return Padding(
-      padding: const EdgeInsets.all(22.0),
+      padding: const EdgeInsets.all(5.0),
       child: SizedBox(
         width: 420,
         height: 69,
@@ -133,6 +145,23 @@ class HomePageState extends State<HomePage> {
     );
   }
 
+  Padding button5(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(22.0),
+      child: ElevatedButton(
+          onPressed: () {
+            showAboutDialog(
+              context: context,
+              applicationName: 'DNA Strand Reverser',
+              applicationVersion: '1.0.1',
+              applicationLegalese: 'GNU GPL v3 License',
+              applicationIcon: Image.asset('assets/strand_reverser64.png'),
+            );
+          },
+          child: const Text('About this application')),
+    );
+  }
+
   Padding title(String title) {
     return Padding(
       padding: const EdgeInsets.all(7),
@@ -151,12 +180,12 @@ class HomePageState extends State<HomePage> {
       padding: const EdgeInsets.all(8.0),
       child: ElevatedButton(
         onPressed: () async {
-          await exportLogic(
-              context, sequence, reverseSequence, reversedSequence,
-              complementSequence);
+          await exportLogic(context, sequence, reverseSequence,
+              reversedSequence, complementSequence);
         },
         child: const Text('Export to CSV'),
-      ),);
+      ),
+    );
   }
 
   Padding button2(BuildContext context) {
@@ -164,8 +193,7 @@ class HomePageState extends State<HomePage> {
       padding: const EdgeInsets.all(8.0),
       child: ElevatedButton(
           onPressed: () => Importlogic.importLogic(context),
-          child: const Text ('Import and process CSV')),
-
+          child: const Text('Import and process CSV')),
     );
   }
 
