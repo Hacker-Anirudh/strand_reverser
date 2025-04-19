@@ -18,7 +18,7 @@ Future<void> exportLogic(
     ];
     String csv = const ListToCsvConverter().convert(rows);
 
-    String? path = await Shared.makeFileName('dna_sequence');
+    String? path = await Shared.makeFileName(context, 'dna_sequence');
 
     if (path != null) {
       try {

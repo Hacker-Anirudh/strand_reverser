@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:intl/intl.dart';
-import 'package:path_provider/path_provider.dart';
 
 class Shared {
   // Helper function to show error dialogs
@@ -21,12 +20,13 @@ class Shared {
     );
   }
 
-  static Future<String?> makeFileName(String name) async {
+  static Future<String?> makeFileName(BuildContext context, name) async {
     String? directory = await getDirectoryPath();
     DateTime now = DateTime.now();
     String formattedDate = DateFormat('yyyy-MM-dd_HH-mm-ss').format(now);
-    dynamic docdir = await getApplicationDocumentsDirectory();
-    directory ??= docdir.path;
+    if (directory == null) {
+      Shared.showErrorDialog(context, 'Directory is NULL');
+    }
     final path = '$directory/$formattedDate-$name.csv';
     return path;
   }

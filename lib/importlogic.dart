@@ -6,8 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 
 class Importlogic {
-  static 
-  Future<void> importLogic(BuildContext context) async {
+  static Future<void> importLogic(BuildContext context) async {
     try {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
@@ -17,10 +16,8 @@ class Importlogic {
       if (result != null) {
         File file = File(result.files.single.path!);
         final csvData = await file.readAsString();
-        List<String> rows = csvData
-            .split('\n')
-            .map((row) => row.trim())
-            .toList();
+        List<String> rows =
+            csvData.split('\n').map((row) => row.trim()).toList();
         rows.removeWhere((row) => row.isEmpty || row == 'Sequences');
         List<List<String>> outputRows = [
           ['Sequence', 'Reverse', 'Reverse-Complement', 'Complement']
@@ -38,11 +35,12 @@ class Importlogic {
           String reverse = Logic.reverseDNA(inputSequence);
           String complement = Logic.complementDNA(inputSequence);
           String reverseComplement = Logic.reversecomplementDNA(inputSequence);
-          outputRows.add(
-              [inputSequence, reverse, reverseComplement, complement]);
+          outputRows
+              .add([inputSequence, reverse, reverseComplement, complement]);
         }
 
-        String? outputFilePath = await Shared.makeFileName('processed_sequences');
+        String? outputFilePath =
+            await Shared.makeFileName(context, 'processed_sequences');
         if (outputFilePath != null) {
           File outputFile = File(outputFilePath);
           String csvOutput = const ListToCsvConverter().convert(outputRows);
@@ -51,23 +49,22 @@ class Importlogic {
           String dialogMessage = 'CSV exported to: $outputFilePath';
           if (invalidSequences.isNotEmpty) {
             dialogMessage +=
-            '\n\nInvalid sequences skipped:\n${invalidSequences.join(", ")}';
+                '\n\nInvalid sequences skipped:\n${invalidSequences.join(", ")}';
           }
 
           if (context.mounted) {
             showDialog<String>(
               context: context,
-              builder: (BuildContext context) =>
-                  AlertDialog(
-                    title: const Text('Export Successful'),
-                    content: Text(dialogMessage),
-                    actions: <Widget>[
-                      TextButton(
-                        onPressed: () => Navigator.pop(context, 'OK'),
-                        child: const Text('OK'),
-                      ),
-                    ],
+              builder: (BuildContext context) => AlertDialog(
+                title: const Text('Export Successful'),
+                content: Text(dialogMessage),
+                actions: <Widget>[
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, 'OK'),
+                    child: const Text('OK'),
                   ),
+                ],
+              ),
             );
           }
         } else {
