@@ -59,31 +59,49 @@ class HomePageState extends State<HomePage> {
       ),
       home: Scaffold(
         floatingActionButton: changemode(),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              button5(context),
-              textField1(),
-              button1(context),
-              seq(sequence),
-              title('Reverse'),
-              seq(reverseSequence),
-              title('Complement'),
-              seq(complementSequence),
-              title('Reverse-Complement'),
-              seq(reversedSequence),
-              Padding(
-                padding: const EdgeInsets.all(17.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    button2(context),
-                    button3(context),
-                  ],
-                ),
-              )
-            ],
+        body: SingleChildScrollView(
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                button5(context),
+                textField1(),
+                button1(context),
+                seq(sequence),
+                title('Reverse'),
+                seq(reverseSequence),
+                title('Complement'),
+                seq(complementSequence),
+                title('Reverse-Complement'),
+                seq(reversedSequence),
+                Padding(
+                  padding: const EdgeInsets.all(17.0),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      if (constraints.maxWidth < 600) {
+                        return Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            button2(context),
+                            const SizedBox(height: 8),
+                            button3(context),
+                          ],
+                        );
+                      } else {
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            button2(context),
+                            const SizedBox(width: 8),
+                            button3(context),
+                          ],
+                        );
+                      }
+                    },
+                  ),
+                )
+              ],
+            ),
           ),
         ),
       ),
@@ -111,12 +129,14 @@ class HomePageState extends State<HomePage> {
 
   Padding textField1() {
     return Padding(
-      padding: const EdgeInsets.all(5.0),
-      child: SizedBox(
-        width: 420,
-        height: 69,
+      padding: const EdgeInsets.all(12.0),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.8,
+        ),
         child: TextField(
           controller: textController,
+          onSubmitted: (_) => processInput(),
           decoration: const InputDecoration(
             border: OutlineInputBorder(),
             labelText: 'Enter the DNA sequence here.',
@@ -126,20 +146,22 @@ class HomePageState extends State<HomePage> {
     );
   }
 
+  void processInput() {
+    String input = textController.text.toUpperCase();
+    if (input.contains(RegExp(r'[^ATGC]'))) {
+      Shared.showErrorDialog(context,
+          'You have not entered a valid DNA sequence, please try again.');
+    } else {
+      setstate(input);
+    }
+    textController.clear();
+  }
+
   Padding button1(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(22.0),
+      padding: const EdgeInsets.all(12.0),
       child: ElevatedButton(
-        onPressed: () {
-          String input = textController.text.toUpperCase();
-          if (input.contains(RegExp(r'[^ATGC]'))) {
-            Shared.showErrorDialog(context,
-                'You have not entered a valid DNA sequence, please try again.');
-          } else {
-            setstate(input);
-          }
-          textController.clear();
-        },
+        onPressed: processInput,
         child: const Text('Process'),
       ),
     );
@@ -147,13 +169,13 @@ class HomePageState extends State<HomePage> {
 
   Padding button5(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(22.0),
+      padding: const EdgeInsets.all(35.0),
       child: ElevatedButton(
           onPressed: () {
             showAboutDialog(
               context: context,
               applicationName: 'DNA Strand Reverser',
-              applicationVersion: '1.0.1',
+              applicationVersion: '1.1',
               applicationLegalese: 'GNU GPL v3 License',
               applicationIcon: Image.asset('assets/strand_reverser64.png'),
             );
@@ -162,22 +184,23 @@ class HomePageState extends State<HomePage> {
     );
   }
 
-  Padding title(String title) {
+  Widget title(String text, {EdgeInsets? padding}) {
     return Padding(
-      padding: const EdgeInsets.all(7),
+      padding: padding ?? const EdgeInsets.all(8.0),
       child: Text(
-        title,
-        style: const TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 31,
-        ),
+        text,
+        style: TextStyle(
+            fontSize: (MediaQuery.of(context).size.width +
+                    MediaQuery.of(context).size.height) /
+                72,
+            fontWeight: FontWeight.bold),
       ),
     );
   }
 
   Padding button3(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.all(4.0),
       child: ElevatedButton(
         onPressed: () async {
           await exportLogic(context, sequence, reverseSequence,
@@ -190,21 +213,23 @@ class HomePageState extends State<HomePage> {
 
   Padding button2(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.all(4.0),
       child: ElevatedButton(
           onPressed: () => Importlogic.importLogic(context),
           child: const Text('Import and process CSV')),
     );
   }
 
-  Padding seq(String text) {
+  Padding seq(String text, {EdgeInsets? padding}) {
     return Padding(
-      padding: const EdgeInsets.all(7),
+      padding: padding ?? const EdgeInsets.all(12.0),
       child: Text(
         text,
-        style: const TextStyle(
+        style: TextStyle(
           fontStyle: FontStyle.italic,
-          fontSize: 13,
+          fontSize: (MediaQuery.of(context).size.width +
+                  MediaQuery.of(context).size.height) /
+              65,
         ),
       ),
     );
