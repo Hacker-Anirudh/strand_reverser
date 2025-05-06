@@ -25,7 +25,7 @@ class Shared {
     DateTime now = DateTime.now();
     String formattedDate = DateFormat('yyyy-MM-dd_HH-mm-ss').format(now);
     if (directory == null) {
-      Shared.showErrorDialog(context, 'Directory is NULL');
+      return null;
     }
     final path = '$directory/$formattedDate-$name.csv';
     return path;

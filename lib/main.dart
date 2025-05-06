@@ -176,7 +176,12 @@ class HomePageState extends State<HomePage> {
               context: context,
               applicationName: 'DNA Strand Reverser',
               applicationVersion: '1.1',
-              applicationLegalese: 'GNU GPL v3 License',
+              applicationLegalese:
+                  'GNU GPL v3 License\n© 2020-2025 Anirudh Menon. All rights reserved.',
+              children: [
+                const Text(
+                    'This application is a simple DNA sequence reverser. It can reverse, complement, and reverse-complement DNA sequences.'),
+              ],
               applicationIcon: Image.asset('assets/strand_reverser64.png'),
             );
           },
