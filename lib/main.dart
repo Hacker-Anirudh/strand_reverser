@@ -192,7 +192,7 @@ class HomePageState extends State<HomePage> {
   Widget title(String text, {EdgeInsets? padding}) {
     return Padding(
       padding: padding ?? const EdgeInsets.all(8.0),
-      child: Text(
+      child: SelectableText(
         text,
         style: TextStyle(
             fontSize: (MediaQuery.of(context).size.width +
@@ -228,7 +228,7 @@ class HomePageState extends State<HomePage> {
   Padding seq(String text, {EdgeInsets? padding}) {
     return Padding(
       padding: padding ?? const EdgeInsets.all(12.0),
-      child: Text(
+      child: SelectableText(
         text,
         style: TextStyle(
           fontStyle: FontStyle.italic,
